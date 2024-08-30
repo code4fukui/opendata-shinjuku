@@ -1,0 +1,53 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
+<title>新宿区人口町丁別推移（日本人＋外国人）</title>
+</head><body>
+<h1>新宿区人口町丁別推移（日本人＋外国人）</h1>
+<div id=main>
+<div id=chart1></div>
+</div>
+DATA: <a href=https://www.city.shinjuku.lg.jp/kusei/file02_00025.html>住民基本台帳人口　町丁別男女別人口及び世帯数：新宿区</a> → <a href=https://github.com/code4fukui/opendata-shinjuku/>GitHub</a> → <a href=https://code4fukui.github.io/opendata-shinjuku/population.csv>CSV</a><br>
+App: <a href=https://github.com/code4fukui/opendata-shinjuku>src on GitHub</a><br>
+
+<script type="module">
+import { CSV } from "https://js.sabae.cc/CSV.js";
+import { DateTime } from "https://js.sabae.cc/DateTime.js";
+import { showLineChart } from "https://code4fukui.github.io/opendata_sansyoku-rate/showLineChart.js";
+import { Num } from "https://js.sabae.cc/Num.js";
+import { ArrayUtil } from "https://js.sabae.cc/ArrayUtil.js";
+
+const url = "./csv/all.csv";
+const list = CSV.toJSON(await CSV.fetch(url));
+list.sort((a, b) => {
+  new DateTime(a.date).getTime() - new DateTime(b.date).getTime()
+});
+const formatter = v => v + "%";
+
+const towns = ArrayUtil.toUnique(list.map(i => i.町丁名));
+//console.log(towns);
+const series = [];
+for (const town of towns) {
+  const name = "世帯数";
+  //町丁名,世帯数,男,女
+  const data = list.filter(i => i.町丁名 == town)
+    .map(i => [new DateTime(i.date).getTime(), parseInt(i[name])]);
+  //console.log(data);
+  series.push({ name: town, data });
+}
+
+showLineChart(chart1, {
+  //title: "産食率推移",
+  series,
+  //yaxis: { min: 0, max: 100 },
+  //formatter,
+  height: 800,
+});
+
+</script>
+
+<style>
+#chart1 > div {
+  height: 80vh !important;
+}
+</style>
+
+</body></html>
